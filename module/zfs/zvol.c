@@ -88,6 +88,7 @@
 #include <sys/zfs_znode.h>
 #include <sys/spa_impl.h>
 #include <sys/zvol.h>
+#include <sys/staskq.h>
 #include <linux/blkdev_compat.h>
 
 unsigned int zvol_inhibit_dev = 0;
@@ -2329,7 +2330,7 @@ zvol_set_snapdev_sync_cb(dsl_pool_t *dp, dsl_dataset_t *ds, void *arg)
 	if (task == NULL)
 		return (0);
 
-	(void) taskq_dispatch(dp->dp_spa->spa_zvol_taskq, zvol_task_cb,
+	(void) staskq_dispatch(dp->dp_spa->spa_zvol_taskq, zvol_task_cb,
 	    task, TQ_SLEEP);
 	return (0);
 }
@@ -2389,9 +2390,9 @@ zvol_create_minors(spa_t *spa, const char *name, boolean_t async)
 	if (task == NULL)
 		return;
 
-	id = taskq_dispatch(spa->spa_zvol_taskq, zvol_task_cb, task, TQ_SLEEP);
+	id = staskq_dispatch(spa->spa_zvol_taskq, zvol_task_cb, task, TQ_SLEEP);
 	if ((async == B_FALSE) && (id != TASKQID_INVALID))
-		taskq_wait_id(spa->spa_zvol_taskq, id);
+		staskq_wait_id(spa->spa_zvol_taskq, id);
 }
 
 void
@@ -2404,9 +2405,9 @@ zvol_remove_minors(spa_t *spa, const char *name, boolean_t async)
 	if (task == NULL)
 		return;
 
-	id = taskq_dispatch(spa->spa_zvol_taskq, zvol_task_cb, task, TQ_SLEEP);
+	id = staskq_dispatch(spa->spa_zvol_taskq, zvol_task_cb, task, TQ_SLEEP);
 	if ((async == B_FALSE) && (id != TASKQID_INVALID))
-		taskq_wait_id(spa->spa_zvol_taskq, id);
+		staskq_wait_id(spa->spa_zvol_taskq, id);
 }
 
 void
@@ -2420,9 +2421,9 @@ zvol_rename_minors(spa_t *spa, const char *name1, const char *name2,
 	if (task == NULL)
 		return;
 
-	id = taskq_dispatch(spa->spa_zvol_taskq, zvol_task_cb, task, TQ_SLEEP);
+	id = staskq_dispatch(spa->spa_zvol_taskq, zvol_task_cb, task, TQ_SLEEP);
 	if ((async == B_FALSE) && (id != TASKQID_INVALID))
-		taskq_wait_id(spa->spa_zvol_taskq, id);
+		staskq_wait_id(spa->spa_zvol_taskq, id);
 }
 
 int

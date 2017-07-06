@@ -1162,7 +1162,7 @@ spa_activate(spa_t *spa, int mode)
 	 * task. In this context, there is easy access to the spa_t and minimal
 	 * error handling is required because the sync task must succeed.
 	 */
-	spa->spa_zvol_taskq = taskq_create("z_zvol", 1, defclsyspri,
+	spa->spa_zvol_taskq = staskq_create("z_zvol", 1, defclsyspri,
 	    1, INT_MAX, 0);
 
 	/*
@@ -1190,7 +1190,7 @@ spa_deactivate(spa_t *spa)
 	spa_evicting_os_wait(spa);
 
 	if (spa->spa_zvol_taskq) {
-		taskq_destroy(spa->spa_zvol_taskq);
+		staskq_destroy(spa->spa_zvol_taskq);
 		spa->spa_zvol_taskq = NULL;
 	}
 
@@ -4330,7 +4330,8 @@ spa_export_common(char *pool, int new_state, nvlist_t **oldconfig,
 	spa_async_suspend(spa);
 	if (spa->spa_zvol_taskq) {
 		zvol_remove_minors(spa, spa_name(spa), B_TRUE);
-		taskq_wait(spa->spa_zvol_taskq);
+		staskq_suspend(spa->spa_zvol_taskq);
+		staskq_wait(spa->spa_zvol_taskq);
 	}
 	mutex_enter(&spa_namespace_lock);
 	spa_close(spa, FTAG);
@@ -4355,6 +4356,8 @@ spa_export_common(char *pool, int new_state, nvlist_t **oldconfig,
 	if (!spa_refcount_zero(spa) ||
 	    (spa->spa_inject_ref != 0 &&
 	    new_state != POOL_STATE_UNINITIALIZED)) {
+		if (spa->spa_zvol_taskq)
+			staskq_resume(spa->spa_zvol_taskq);
 		spa_async_resume(spa);
 		mutex_exit(&spa_namespace_lock);
 		return (SET_ERROR(EBUSY));
@@ -4369,6 +4372,8 @@ spa_export_common(char *pool, int new_state, nvlist_t **oldconfig,
 		 */
 		if (!force && new_state == POOL_STATE_EXPORTED &&
 		    spa_has_active_shared_spare(spa)) {
+			if (spa->spa_zvol_taskq)
+				staskq_resume(spa->spa_zvol_taskq);
 			spa_async_resume(spa);
 			mutex_exit(&spa_namespace_lock);
 			return (SET_ERROR(EXDEV));

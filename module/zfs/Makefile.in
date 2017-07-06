@@ -61,6 +61,7 @@ $(MODULE)-objs += spa_misc.o
 $(MODULE)-objs += spa_stats.o
 $(MODULE)-objs += space_map.o
 $(MODULE)-objs += space_reftree.o
+$(MODULE)-objs += staskq.o
 $(MODULE)-objs += txg.o
 $(MODULE)-objs += trace.o
 $(MODULE)-objs += uberblock.o

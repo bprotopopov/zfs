@@ -88,6 +88,7 @@ KERNEL_C = \
 	spa_stats.c \
 	space_map.c \
 	space_reftree.c \
+	staskq.c \
 	txg.c \
 	trace.c \
 	uberblock.c \

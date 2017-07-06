@@ -3260,7 +3260,7 @@ zfs_ioc_create(const char *fsname, nvlist_t *innvl, nvlist_t *outnvl)
 			while ((error2 == EBUSY) && (type == DMU_OST_ZVOL)) {
 				error2 = spa_open(fsname, &spa, FTAG);
 				if (error2 == 0) {
-					taskq_wait(spa->spa_zvol_taskq);
+					staskq_wait(spa->spa_zvol_taskq);
 					spa_close(spa, FTAG);
 				}
 				error2 = dsl_destroy_head(fsname);
